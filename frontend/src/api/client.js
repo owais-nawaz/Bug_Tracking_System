@@ -10,6 +10,14 @@ async function parseRes(res) {
   return data;
 }
 
+function authHeaders(user) {
+  return {
+    'Content-Type': 'application/json',
+    'x-user-role': user?.role || '',
+    'x-user-name': user?.username || '',
+  };
+}
+
 export const authApi = {
   login: (creds) => fetch(`${BASE}/auth/login`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds)
@@ -17,5 +25,11 @@ export const authApi = {
 
   signup: (data) => fetch(`${BASE}/auth/signup`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+  }).then(parseRes),
+};
+
+export const bugsApi = {
+  create: (data, user) => fetch(`${BASE}/bugs`, {
+    method: 'POST', headers: authHeaders(user), body: JSON.stringify(data)
   }).then(parseRes),
 };
