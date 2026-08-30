@@ -36,6 +36,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Bug Tracking System API running', port: PORT });
 });
 
+// Role authorization middleware — rejects unauthorized API calls
+function requireRole(allowedRoles) {
+  return (req, res, next) => {
+    const role     = req.headers['x-user-role'];
+    const username = req.headers['x-user-name'];
+    if (!role) return res.status(401).json({ success: false, errors: ['Authentication required.'] });
+    if (!allowedRoles.includes(role))
+      return res.status(403).json({ success: false, errors: [`Role "${role}" is not authorised for this action.`] });
+    req.authenticatedUser = { username: username || 'Anonymous', role };
+    next();
+  };
+}
+
+
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
   try {
