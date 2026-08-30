@@ -16,6 +16,7 @@
   --bts-warning:  #b45309;
   --bts-danger:   #dc2626;
   --bts-orange:   #ea580c;
+  --bts-critical: #b91c1c;
 
   /* ── Status-specific ── */
   --bts-status-open-bg:       #F2EFE7;

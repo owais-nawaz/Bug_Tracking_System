@@ -4,6 +4,8 @@ const cors     = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User   = require('./models/User');
+const Bug    = require('./models/Bug');
+
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -94,6 +96,31 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// POST /api/bugs — Tester or QA Lead submits a bug report
+app.post('/api/bugs', requireRole(['Tester', 'QALead']), async (req, res) => {
+  const { title, module, severity, priority, description } = req.body;
+  const reporter = req.authenticatedUser.username;
+
+  const errors = [];
+  if (!title || title.trim().length < 5)   errors.push('Title must be at least 5 characters.');
+  if (!module || module.trim() === '')      errors.push('Module is required.');
+  if (!description || description.trim().length < 10) errors.push('Description must be at least 10 characters.');
+  if (!['Low','Medium','High','Critical'].includes(severity)) errors.push('Valid severity is required.');
+  if (!['Low','Medium','High','Critical'].includes(priority)) errors.push('Valid priority is required.');
+  if (errors.length) return res.status(400).json({ success: false, errors });
+
+  const lastBug = await Bug.findOne().sort({ ticketId: -1 });
+  const ticketId = lastBug ? lastBug.ticketId + 1 : 101;
+
+  const newBug = await Bug.create({
+    ticketId, title: title.trim(), module: module.trim(),
+    severity, priority, description: description.trim(),
+    status: 'Open', reporter, assignee: 'Unassigned'
+  });
+
+  res.status(201).json({ success: true, message: `BUG-${ticketId} created.`,
+    bug: { ...newBug.toObject(), id: ticketId } });
+});
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

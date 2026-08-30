@@ -3,49 +3,53 @@ import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthPage from './components/auth/AuthPage';
 import Notification from './components/shared/Notification';
+import BugSubmissionForm from './components/bugs/BugSubmissionForm';
 
 const ROLE_LABEL = { Tester: 'QA Tester', Developer: 'Developer', QALead: 'QA Lead' };
 
 function AppContent() {
   const { user, login, logout } = useAuth();
   const [notification, setNotification] = useState(null);
+  const [activeTab, setActiveTab]       = useState('submit');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const notify = useCallback((message, type = 'info') => setNotification({ message, type }), []);
 
   if (!user) return <AuthPage onLogin={login} />;
 
-  // Bug reporting and dashboard tabs will be added in BTS-1 and BTS-2
   return (
     <div className="bts-layout">
-      <header style={{ background: 'var(--bts-surface)', borderBottom: '1px solid var(--bts-border)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, fontSize: 16 }}>
-          <span className="material-icons" style={{ fontSize: 22, color: 'var(--bts-primary)' }}>bug_report</span>
-          Bug Tracker
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, color: 'var(--bts-text-muted)' }}>
+      {/* Navbar — extracted into Navbar.jsx in BTS-2 */}
+      <header className="bts-navbar">
+        <span className="bts-navbar__brand">🐞 Bug Tracker Portal</span>
+        <div className="bts-navbar__user">
+          <span className="bts-navbar__role" style={{ fontSize: 13 }}>
             {user.username} · {ROLE_LABEL[user.role]}
           </span>
-          <button className="btn btn-ghost btn-sm" onClick={logout}>
-            <span className="material-icons" style={{ fontSize: 16 }}>logout</span>
-            Sign out
-          </button>
+          <button className="btn-outline-white btn-sm" onClick={logout}>Logout</button>
         </div>
       </header>
+
+      {/* Sub-navigation — extracted into SubNav.jsx in BTS-2 */}
+      <div className="bts-subnav">
+        {(user.role === 'Tester' || user.role === 'QALead') && (
+          <button
+            className={`bts-subnav__tab${activeTab === 'submit' ? ' bts-subnav__tab--active' : ''}`}
+            onClick={() => setActiveTab('submit')}
+          >
+            + Report Bug
+          </button>
+        )}
+      </div>
 
       {notification && (
         <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />
       )}
 
       <main className="bts-main">
-        <h1 className="bts-page-title">
-          <span className="material-icons" style={{ fontSize: 26, color: 'var(--bts-primary)' }}>waving_hand</span>
-          Welcome, {user.username}!
-        </h1>
-        <p style={{ color: 'var(--bts-text-muted)' }}>
-          Signed in as <strong style={{ color: 'var(--bts-primary)' }}>{ROLE_LABEL[user.role]}</strong>.
-          Bug reporting features are being built — check back soon.
-        </p>
+        {activeTab === 'submit' && (user.role === 'Tester' || user.role === 'QALead') && (
+          <BugSubmissionForm currentUser={user} onNotify={notify} onSuccess={() => setRefreshTrigger(r => r + 1)} />
+        )}
       </main>
     </div>
   );
