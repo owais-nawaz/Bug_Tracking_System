@@ -19,13 +19,17 @@ function AppContent() {
     <div className="bts-layout">
       <header style={{ background: 'var(--bts-surface)', borderBottom: '1px solid var(--bts-border)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, fontSize: 16 }}>
-          🐞 Bug Tracker
+          <span className="material-icons" style={{ fontSize: 22, color: 'var(--bts-primary)' }}>bug_report</span>
+          Bug Tracker
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 13, color: 'var(--bts-text-muted)' }}>
             {user.username} · {ROLE_LABEL[user.role]}
           </span>
-          <button className="btn btn-ghost btn-sm" onClick={logout}>Sign out</button>
+          <button className="btn btn-ghost btn-sm" onClick={logout}>
+            <span className="material-icons" style={{ fontSize: 16 }}>logout</span>
+            Sign out
+          </button>
         </div>
       </header>
 
@@ -34,7 +38,10 @@ function AppContent() {
       )}
 
       <main className="bts-main">
-        <h1 className="bts-page-title">Welcome, {user.username}! 👋</h1>
+        <h1 className="bts-page-title">
+          <span className="material-icons" style={{ fontSize: 26, color: 'var(--bts-primary)' }}>waving_hand</span>
+          Welcome, {user.username}!
+        </h1>
         <p style={{ color: 'var(--bts-text-muted)' }}>
           Signed in as <strong style={{ color: 'var(--bts-primary)' }}>{ROLE_LABEL[user.role]}</strong>.
           Bug reporting features are being built — check back soon.
