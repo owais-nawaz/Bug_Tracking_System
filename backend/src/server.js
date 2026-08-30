@@ -122,5 +122,19 @@ app.post('/api/bugs', requireRole(['Tester', 'QALead']), async (req, res) => {
     bug: { ...newBug.toObject(), id: ticketId } });
 });
 
+// GET /api/bugs — retrieve and filter all bug tickets
+app.get('/api/bugs', async (req, res) => {
+  const { status, priority, search } = req.query;
+  let query = {};
+  if (status && status !== 'All')     query.status   = new RegExp(`^${status}$`, 'i');
+  if (priority && priority !== 'All') query.priority = new RegExp(`^${priority}$`, 'i');
+  if (search) query.$or = [
+    { title:       { $regex: search, $options: 'i' } },
+    { description: { $regex: search, $options: 'i' } },
+  ];
+  const bugs = await Bug.find(query).sort({ updatedAt: -1 });
+  res.json({ success: true, count: bugs.length, bugs: bugs.map(b => ({ ...b.toObject(), id: b.ticketId })) });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
