@@ -6,15 +6,19 @@ export default function AuthPage({ onLogin }) {
   const [view, setView] = useState('login');
   return (
     <div className="bts-auth">
-      <div className="bts-auth__brand">
-        <div className="bts-auth__brand-icon">🐞</div>
-        <h1>Bug Tracking System</h1>
-        <p>IFN636 Assessment 1 — Role-Based Defect Management</p>
-      </div>
-      <div className="bts-auth__card">
-        {view === 'login'
-          ? <LoginForm onLogin={onLogin} onSwitchToSignup={() => setView('signup')} />
-          : <SignupForm onSignup={onLogin} onSwitchToLogin={() => setView('login')} />}
+      <header className="bts-auth__header">
+        <span className="material-icons bts-auth__header-icon">bug_report</span>
+        <div>
+          <h1 className="bts-auth__header-title">Bug Tracker Portal</h1>
+          <p className="bts-auth__header-sub">Role-based Software Quality Portal</p>
+        </div>
+      </header>
+      <div className="bts-auth__body">
+        <div className="bts-auth__card">
+          {view === 'login'
+            ? <LoginForm onLogin={onLogin} onSwitchToSignup={() => setView('signup')} />
+            : <SignupForm onSignup={onLogin} onSwitchToLogin={() => setView('login')} />}
+        </div>
       </div>
     </div>
   );
