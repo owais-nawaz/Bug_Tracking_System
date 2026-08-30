@@ -29,6 +29,14 @@ export const authApi = {
 };
 
 export const bugsApi = {
+  getAll: (filters = {}) => {
+    const p = new URLSearchParams();
+    if (filters.status   && filters.status   !== 'All') p.set('status',   filters.status);
+    if (filters.priority && filters.priority !== 'All') p.set('priority', filters.priority);
+    if (filters.search?.trim()) p.set('search', filters.search.trim());
+    return fetch(`${BASE}/bugs?${p}`).then(parseRes);
+  },
+
   create: (data, user) => fetch(`${BASE}/bugs`, {
     method: 'POST', headers: authHeaders(user), body: JSON.stringify(data)
   }).then(parseRes),
