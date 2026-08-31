@@ -49,7 +49,7 @@ function AppContent() {
           <BugSubmissionForm currentUser={user} onNotify={notify} onSuccess={() => setRefreshTrigger(r => r + 1)} />
         )}
         {activeTab === 'mywork' && user.role === 'Developer' && (
-          <DeveloperWorkspace currentUser={user} onNotify={notify} onResolve={() => {}} />
+          <DeveloperWorkspace currentUser={user} onNotify={notify} />
         )}
       </main>
     </div>
