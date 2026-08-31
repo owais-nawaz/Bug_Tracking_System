@@ -137,4 +137,19 @@ app.get('/api/bugs', async (req, res) => {
 });
 
 
+// PATCH /api/bugs/:id/claim — Developer claims an open ticket
+app.patch('/api/bugs/:id/claim', requireRole(['Developer']), async (req, res) => {
+  const bugId    = parseInt(req.params.id, 10);
+  const assignee = req.authenticatedUser.username;
+  const updated  = await Bug.findOneAndUpdate(
+    { ticketId: bugId },
+    { assignee, status: 'In Progress' },
+    { new: true }
+  );
+  if (!updated) return res.status(404).json({ success: false, errors: ['Ticket not found.'] });
+  res.json({ success: true, message: `BUG-${bugId} claimed by ${assignee}.`,
+    bug: { ...updated.toObject(), id: updated.ticketId } });
+});
+
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
