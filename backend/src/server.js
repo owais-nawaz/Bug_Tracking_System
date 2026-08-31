@@ -151,5 +151,23 @@ app.patch('/api/bugs/:id/claim', requireRole(['Developer']), async (req, res) =>
     bug: { ...updated.toObject(), id: updated.ticketId } });
 });
 
+// PATCH /api/bugs/:id/resolve — Developer logs resolution notes
+app.patch('/api/bugs/:id/resolve', requireRole(['Developer']), async (req, res) => {
+  const bugId = parseInt(req.params.id, 10);
+  const { resolutionType, resolutionNotes } = req.body;
+  const developer = req.authenticatedUser.username;
+
+  if (!resolutionNotes || resolutionNotes.trim().length < 5)
+    return res.status(400).json({ success: false, errors: ['Resolution notes must be at least 5 characters.'] });
+
+  const updated = await Bug.findOneAndUpdate(
+    { ticketId: bugId },
+    { status: 'Resolved', resolutionType, resolutionNotes: resolutionNotes.trim(), assignee: developer },
+    { new: true }
+  );
+  if (!updated) return res.status(404).json({ success: false, errors: ['Ticket not found.'] });
+  res.json({ success: true, message: `BUG-${bugId} resolved by ${developer}.`,
+    bug: { ...updated.toObject(), id: updated.ticketId } });
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

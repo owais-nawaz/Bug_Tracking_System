@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { bugsApi } from '../../api/client';
 import BugCard from '../bugs/BugCard';
+import ResolutionModal from './ResolutionModal';
 
-export default function DeveloperWorkspace({ currentUser, onNotify, onResolve }) {
-  const [bugs, setBugs]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refresh, setRefresh] = useState(0);
+export default function DeveloperWorkspace({ currentUser, onNotify }) {
+  const [bugs, setBugs]             = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [refresh, setRefresh]       = useState(0);
+  const [resolveBug, setResolveBug] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,7 +47,7 @@ export default function DeveloperWorkspace({ currentUser, onNotify, onResolve })
           <div className="bug-grid">
             {unassigned.map(b => (
               <BugCard key={b._id || b.ticketId} bug={b} currentUser={currentUser}
-                onClaim={handleClaim} onResolve={onResolve} onVerify={() => {}} />
+                onClaim={handleClaim} onResolve={setResolveBug} onVerify={() => {}} />
             ))}
           </div>
         )}
@@ -65,11 +67,21 @@ export default function DeveloperWorkspace({ currentUser, onNotify, onResolve })
           <div className="bug-grid">
             {myActive.map(b => (
               <BugCard key={b._id || b.ticketId} bug={b} currentUser={currentUser}
-                onClaim={() => {}} onResolve={onResolve} onVerify={() => {}} />
+                onClaim={() => {}} onResolve={setResolveBug} onVerify={() => {}} />
             ))}
           </div>
         )}
       </div>
+
+      {resolveBug && (
+        <ResolutionModal
+          bug={resolveBug}
+          currentUser={currentUser}
+          onSuccess={() => { setResolveBug(null); setRefresh(r => r + 1); }}
+          onClose={() => setResolveBug(null)}
+          onNotify={onNotify}
+        />
+      )}
     </div>
   );
 }
