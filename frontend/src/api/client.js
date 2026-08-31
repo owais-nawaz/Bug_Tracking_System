@@ -37,7 +37,11 @@ export const bugsApi = {
   resolve: (id, data, user) => fetch(`${BASE}/bugs/${id}/resolve`, {
     method: 'PATCH', headers: authHeaders(user), body: JSON.stringify(data)
   }).then(parseRes),
-  
+
+  verify: (id, data, user) => fetch(`${BASE}/bugs/${id}/verify`, {
+    method: 'PATCH', headers: authHeaders(user), body: JSON.stringify(data)
+  }).then(parseRes),
+
   getAll: (filters = {}) => {
     const p = new URLSearchParams();
     if (filters.status   && filters.status   !== 'All') p.set('status',   filters.status);
