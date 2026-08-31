@@ -29,6 +29,11 @@ export const authApi = {
 };
 
 export const bugsApi = {
+
+  claim: (id, user) => fetch(`${BASE}/bugs/${id}/claim`, {
+    method: 'PATCH', headers: authHeaders(user),
+  }).then(parseRes),
+
   getAll: (filters = {}) => {
     const p = new URLSearchParams();
     if (filters.status   && filters.status   !== 'All') p.set('status',   filters.status);
