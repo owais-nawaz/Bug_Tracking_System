@@ -4,8 +4,7 @@ export default function BugCard({ bug, currentUser, onClaim, onResolve, onVerify
   const id = bug.ticketId || bug.id;
   const canClaim   = bug.status === 'Open'        && currentUser?.role === 'Developer' && (bug.assignee === 'Unassigned' || !bug.assignee);
   const canResolve = bug.status === 'In Progress' && currentUser?.role === 'Developer' && bug.assignee === currentUser?.username;
-  const canVerify  = bug.status === 'Resolved'    && currentUser?.role === 'QALead';
-
+  
   return (
     <div className="bug-card">
       <div className="bug-card__header">
@@ -39,14 +38,10 @@ export default function BugCard({ bug, currentUser, onClaim, onResolve, onVerify
         <span>Dev: <strong>{bug.assignee || 'Unassigned'}</strong></span>
       </div>
 
-      {(canClaim || canResolve || canVerify) && (
+      {(canClaim || canResolve) && (
         <div className="bug-card__actions">
           {canClaim   && <button className="btn btn-primary btn-full" onClick={() => onClaim(bug)}>Claim and Start Work</button>}
           {canResolve && <button className="btn btn-success btn-full" onClick={() => onResolve(bug)}>Submit Resolution</button>}
-          {canVerify  && <>
-            <button className="btn btn-success btn-sm" onClick={() => onVerify(bug, 'close', null)}>Verify &amp; Close</button>
-            <button className="btn btn-danger btn-sm"  onClick={() => onVerify(bug, 'reopen', null)}>Re-Open</button>
-          </>}
         </div>
       )}
     </div>

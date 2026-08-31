@@ -170,4 +170,24 @@ app.patch('/api/bugs/:id/resolve', requireRole(['Developer']), async (req, res) 
     bug: { ...updated.toObject(), id: updated.ticketId } });
 });
 
+// PATCH /api/bugs/:id/verify — QA Lead closes or re-opens a resolved ticket
+app.patch('/api/bugs/:id/verify', requireRole(['QALead']), async (req, res) => {
+  const bugId = parseInt(req.params.id, 10);
+  const { action, qaNotes } = req.body;
+
+  if (action === 'reopen' && (!qaNotes || qaNotes.trim().length < 5))
+    return res.status(400).json({ success: false, errors: ['Regression notes are required to re-open (min. 5 chars).'] });
+
+  const newStatus = action === 'close' ? 'Closed' : 'Re-opened';
+  const updated = await Bug.findOneAndUpdate(
+    { ticketId: bugId },
+    { status: newStatus, qaNotes: qaNotes ? qaNotes.trim() : null },
+    { new: true }
+  );
+  if (!updated) return res.status(404).json({ success: false, errors: ['Ticket not found.'] });
+  res.json({ success: true, message: `BUG-${bugId} → ${newStatus}.`,
+    bug: { ...updated.toObject(), id: updated.ticketId } });
+});
+
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
