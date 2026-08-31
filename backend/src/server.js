@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User   = require('./models/User');
 const Bug    = require('./models/Bug');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 const app  = express();
@@ -41,12 +43,22 @@ app.get('/api/health', (req, res) => {
 // Role authorization middleware — rejects unauthorized API calls
 function requireRole(allowedRoles) {
   return (req, res, next) => {
-    const role     = req.headers['x-user-role'];
-    const username = req.headers['x-user-name'];
-    if (!role) return res.status(401).json({ success: false, errors: ['Authentication required.'] });
-    if (!allowedRoles.includes(role))
-      return res.status(403).json({ success: false, errors: [`Role "${role}" is not authorised for this action.`] });
-    req.authenticatedUser = { username: username || 'Anonymous', role };
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer '))
+      return res.status(401).json({ success: false, errors: ['Authentication required.'] });
+
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ success: false, errors: ['Invalid or expired session — please log in again.'] });
+    }
+
+    if (!allowedRoles.includes(decoded.role))
+      return res.status(403).json({ success: false, errors: [`Role "${decoded.role}" is not authorised for this action.`] });
+
+    req.authenticatedUser = { username: decoded.username, role: decoded.role };
     next();
   };
 }
@@ -69,8 +81,11 @@ app.post('/api/auth/signup', async (req, res) => {
     const userRole = ['Tester','Developer','QALead'].includes(role) ? role : 'Tester';
     const user     = await User.create({ username: username.trim(), email: email.toLowerCase(), password: hashed, role: userRole });
 
+    const token = jwt.sign({ username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
     res.status(201).json({ success: true, message: `Account created for ${user.username}.`,
-      user: { username: user.username, email: user.email, role: user.role } });
+      user: { username: user.username, email: user.email, role: user.role },
+      token
+    })
   } catch (err) {
     console.error('Signup error:', err.message);
     res.status(500).json({ success: false, errors: ['Server error — check MongoDB connection.'] });
@@ -88,8 +103,11 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password)))
       return res.status(401).json({ success: false, errors: ['Invalid username or password.'] });
 
+    const token = jwt.sign({ username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
+
     res.json({ success: true, message: `Welcome back, ${user.username}!`,
-      user: { username: user.username, email: user.email, role: user.role } });
+      user: { username: user.username, email: user.email, role: user.role },
+      token });
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ success: false, errors: ['Server error — check MongoDB connection.'] });

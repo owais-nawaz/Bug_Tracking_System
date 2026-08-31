@@ -16,7 +16,8 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
     if (form.password.length < 4)        errs.push('Password must be at least 4 characters.');
     if (errs.length) return setErrors(errs);
     setLoading(true);
-    try { onSignup((await authApi.signup(form)).user); }
+    try { const data = await authApi.signup(form);
+    onSignup({ ...data.user, token: data.token }); }
     catch (err) { setErrors([err.message]); }
     finally { setLoading(false); }
   }
