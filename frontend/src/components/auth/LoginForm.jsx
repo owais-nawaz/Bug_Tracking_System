@@ -19,14 +19,20 @@ export default function LoginForm({ onLogin, onSwitchToSignup }) {
     e.preventDefault();
     if (!form.username.trim() || !form.password) return setErrors(['Username and password are required.']);
     setLoading(true);
-    try { onLogin((await authApi.login(form)).user); }
+    try {
+      const data = await authApi.login({ username: form.username.trim(), password: form.password });
+      onLogin({ ...data.user, token: data.token });
+    }
     catch (err) { setErrors([err.message]); }
     finally { setLoading(false); }
   }
 
   async function demoLogin(d) {
     setActiveDemo(d.username); setLoading(true); setErrors([]);
-    try { onLogin((await authApi.login({ username: d.username, password: d.password })).user); }
+    try {
+      const data = await authApi.login({ username: d.username, password: d.password });
+      onLogin({ ...data.user, token: data.token });
+    }
     catch (err) { setErrors([err.message]); }
     finally { setLoading(false); setActiveDemo(null); }
   }

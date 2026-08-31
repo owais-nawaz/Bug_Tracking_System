@@ -13,8 +13,7 @@ async function parseRes(res) {
 function authHeaders(user) {
   return {
     'Content-Type': 'application/json',
-    'x-user-role': user?.role || '',
-    'x-user-name': user?.username || '',
+    'Authorization': user?.token ? `Bearer ${user.token}` : '',
   };
 }
 
