@@ -5,7 +5,7 @@ import BugFilters from './BugFilters';
 
 const DEFAULT = { status: 'All', priority: 'All', search: '' };
 
-export default function BugDashboard({ currentUser, onNotify, refreshTrigger, onClaim, onResolve, onVerify }) {
+export default function BugDashboard({ currentUser, onNotify, refreshTrigger, onClaim, onResolve }) {
   const [bugs, setBugs]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(DEFAULT);
@@ -26,7 +26,7 @@ export default function BugDashboard({ currentUser, onNotify, refreshTrigger, on
       <BugFilters filters={filters} onChange={setFilters} />
       {bugs.length === 0 ? (
         <div className="bts-empty">
-          <div className="bts-empty__icon">🐛</div>
+          <span className="material-icons bts-empty__icon">bug_report</span>
           <div className="bts-empty__title">No tickets found</div>
           <p>Adjust your filters or submit a new bug report.</p>
         </div>
@@ -34,7 +34,7 @@ export default function BugDashboard({ currentUser, onNotify, refreshTrigger, on
         <div className="bug-grid">
           {bugs.map(b => (
             <BugCard key={b._id || b.id || b.ticketId} bug={b} currentUser={currentUser}
-              onClaim={onClaim} onResolve={onResolve} onVerify={onVerify} />
+              onClaim={onClaim} onResolve={onResolve} />
           ))}
         </div>
       )}
