@@ -25,7 +25,7 @@ function AppContent() {
     const id = bug.ticketId || bug.id;
     try {
       await bugsApi.claim(id, user);
-      notify(`BUG-${id} claimed! Status → In Progress 🔧`, 'success');
+      notify('BUG-${id} claimed! Status changed to In Progress', 'success');
       setRefreshTrigger(r => r + 1);
     } catch (err) { notify(err.message, 'error'); }
   }
@@ -34,7 +34,7 @@ function AppContent() {
     const id = bug.ticketId || bug.id;
     try {
       await bugsApi.verify(id, { action, qaNotes }, user);
-      notify(action === 'close' ? `BUG-${id} verified and Closed ✅` : `BUG-${id} re-opened 🔄`,
+      notify(action === 'close' ? 'BUG-${id} verified and Closed' : `BUG-${id} re-opened 🔄`,
         action === 'close' ? 'success' : 'info');
       setRefreshTrigger(r => r + 1);
     } catch (err) { notify(err.message, 'error'); }
@@ -55,7 +55,6 @@ function AppContent() {
             currentUser={user} onNotify={notify} refreshTrigger={refreshTrigger}
             onClaim={handleClaim}
             onResolve={() => notify('Use the Developer Workspace to resolve tickets.', 'info')}
-            onVerify={() => {}}
           />
         )}
         {activeTab === 'submit' && (user.role === 'Tester' || user.role === 'QALead') && (

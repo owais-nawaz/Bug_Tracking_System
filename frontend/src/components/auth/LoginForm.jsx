@@ -92,7 +92,7 @@ export default function LoginForm({ onLogin, onSwitchToSignup }) {
         Need account?{' '}
         <button onClick={onSwitchToSignup}>Sign Up</button>
         {' / '}
-        <button onClick={onSwitchToSignup}>Login</button>
+        <button onClick={onSwitchToSignup}>Register</button>
       </p>
     </div>
   );

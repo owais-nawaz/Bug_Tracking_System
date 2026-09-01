@@ -27,15 +27,36 @@ async function createBug(req, res) {
 
 async function getBugs(req, res) {
   const { status, priority, search } = req.query;
-  let query = {};
-  if (status && status !== 'All')     query.status   = new RegExp(`^${status}$`, 'i');
-  if (priority && priority !== 'All') query.priority = new RegExp(`^${priority}$`, 'i');
-  if (search) query.$or = [
-    { title:       { $regex: search, $options: 'i' } },
-    { description: { $regex: search, $options: 'i' } },
-  ];
-  const bugs = await Bug.find(query).sort({ updatedAt: -1 });
-  res.json({ success: true, count: bugs.length, bugs: bugs.map(b => ({ ...b.toObject(), id: b.ticketId })) });
+
+  const match = {};
+  if (status && status !== 'All')     match.status   = new RegExp(`^${status}$`, 'i');
+  if (priority && priority !== 'All') match.priority = new RegExp(`^${priority}$`, 'i');
+
+  let bugs;
+
+  if (search) {
+    const trimmed = search.trim();
+    const cleanedId = trimmed.replace(/^bug-?/i, '');
+
+    const orConditions = [
+      { title:       { $regex: trimmed, $options: 'i' } },
+      { description: { $regex: trimmed, $options: 'i' } },
+    ];
+    if (cleanedId) {
+      orConditions.push({ ticketIdStr: { $regex: cleanedId, $options: 'i' } });
+    }
+
+    bugs = await Bug.aggregate([
+      { $match: match },
+      { $addFields: { ticketIdStr: { $toString: '$ticketId' } } }, // convert Number → String so regex works
+      { $match: { $or: orConditions } },
+      { $sort: { updatedAt: -1 } },
+    ]);
+  } else {
+    bugs = await Bug.find(match).sort({ updatedAt: -1 }).lean();
+  }
+
+  res.json({ success: true, count: bugs.length, bugs: bugs.map(b => ({ ...b, id: b.ticketId })) });
 }
 
 async function claimBug(req, res) {
@@ -56,8 +77,8 @@ async function resolveBug(req, res) {
   const { resolutionType, resolutionNotes } = req.body;
   const developer = req.authenticatedUser.username;
 
-  if (!resolutionNotes || resolutionNotes.trim().length < 5)
-    return res.status(400).json({ success: false, errors: ['Resolution notes must be at least 5 characters.'] });
+  if (!resolutionNotes || resolutionNotes.trim().length < 10)
+    return res.status(400).json({ success: false, errors: ['Resolution notes must be at least 10 characters.'] });
 
   const updated = await Bug.findOneAndUpdate(
     { ticketId: bugId },

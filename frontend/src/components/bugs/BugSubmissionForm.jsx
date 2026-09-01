@@ -27,7 +27,7 @@ export default function BugSubmissionForm({ currentUser, onNotify, onSuccess }) 
     setLoading(true);
     try {
       await bugsApi.create(form, currentUser);
-      onNotify('Bug submitted successfully! ✅', 'success');
+      onNotify('Bug submitted successfully!', 'success');
       setForm(EMPTY);
       onSuccess?.();
     } catch (err) { setErrors([err.message]); }
@@ -85,7 +85,7 @@ export default function BugSubmissionForm({ currentUser, onNotify, onSuccess }) 
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Submitting…' : '🚀 Submit bug report'}
+            {loading ? 'Submitting…' : (<><span className="material-icons btn-icon">send</span> Submit bug report</>)}
           </button>
         </div>
       </form>

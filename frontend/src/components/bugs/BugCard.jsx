@@ -1,10 +1,10 @@
 import StatusBadge from '../shared/StatusBadge';
 
-export default function BugCard({ bug, currentUser, onClaim, onResolve, onVerify }) {
+export default function BugCard({ bug, currentUser, onClaim, onResolve }) {
   const id = bug.ticketId || bug.id;
   const canClaim   = bug.status === 'Open'        && currentUser?.role === 'Developer' && (bug.assignee === 'Unassigned' || !bug.assignee);
   const canResolve = bug.status === 'In Progress' && currentUser?.role === 'Developer' && bug.assignee === currentUser?.username;
-  
+
   return (
     <div className="bug-card">
       <div className="bug-card__header">
@@ -33,6 +33,8 @@ export default function BugCard({ bug, currentUser, onClaim, onResolve, onVerify
         </div>
       )}
 
+      <hr className="bug-card__divider" />
+
       <div className="bug-card__meta">
         <span>Rep: <strong>{bug.reporter}</strong></span>
         <span>Dev: <strong>{bug.assignee || 'Unassigned'}</strong></span>
@@ -41,7 +43,7 @@ export default function BugCard({ bug, currentUser, onClaim, onResolve, onVerify
       {(canClaim || canResolve) && (
         <div className="bug-card__actions">
           {canClaim   && <button className="btn btn-primary btn-full" onClick={() => onClaim(bug)}>Claim and Start Work</button>}
-          {canResolve && <button className="btn btn-success btn-full" onClick={() => onResolve(bug)}>Submit Resolution</button>}
+          {canResolve && <button className="btn btn-resolve btn-full" onClick={() => onResolve(bug)}>Submit Resolution</button>}
         </div>
       )}
     </div>
